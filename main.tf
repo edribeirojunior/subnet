@@ -8,19 +8,16 @@ terraform {
 
 resource "google_compute_subnetwork" "main" {
   provider      = "google-beta"
-  project       = "${var.project_id}"
-  name          = "${var.name}"
-  region        = "${var.subnet_region}"
-  network       = "${var.vpc_name}"
-  ip_cidr_range = "${var.ip_cidr_range}"
+  count = length(var.subnets)
 
-  secondary_ip_range {
-    range_name    = "${var.secondary_ip_range_name}"
-    ip_cidr_range = "${var.secondary_ip_cidr}"
-  }
+  name                     = var.subnets[count.index]["subnet_name"]
+  ip_cidr_range            = var.subnets[count.index]["subnet_ip"]
+  region                   = var.subnets[count.index]["subnet_region"]
+  network                  = "${var.vpc_name}"
+  project                  = "${var.project_id}"
+  secondary_ip_range       = var.secondary_ranges[lookup(var.subnets[count.index], "subnet_name", null)]
 
   private_ip_google_access = "${var.private_ip_google_access}"
-
   enable_flow_logs = true
 
   log_config {
